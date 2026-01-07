@@ -67,13 +67,15 @@ Use this if you can't get Spotify API keys. It handles playlists of any size (30
 1. **Collect Links:** Open the Spotify Desktop App, select your songs ('Ctrl+A'), and ('Ctrl+C').
 2. **Save Links:** Create a file named `links.txt` in the project root and paste the links inside.
 3. **Run:**
-   ```bash
-   python hitster_card_creator.py
+```bash
+python src/hitster_card_creator.py
+```
 
 ### Method 3: Official Spotify API
+
 Use this if you already have an existing Spotify App.
 
-Open `hitster_card_creator.py` and replace the placeholders:
+Open `src/hitster_card_creator.py` and replace the placeholders:
 
 ```python
 PLAYLIST_URL = "your_spotify_playlist_url_here"
@@ -81,9 +83,11 @@ CLIENT_ID = "your_client_id_here"
 CLIENT_SECRET = "your_client_secret_here"
 ```
 
+Or better create a `.env` file in the project directory and set the credentials there. See `.env.example` as a template.
+
 Then run:
 ```bash
-python hitster_card_creator.py
+python src/hitster_card_creator.py
 ```
 
 ## Setup Spotify API Credentials
@@ -107,7 +111,9 @@ python hitster_card_creator.py
 
 ## 🔧 Accuracy Fix (Incorrect Years)
 
-Spotify often provides "Remaster" or "Greatest Hits" years (e.g., 2011) instead of the original release date. To fix this:
+The script uses MusicBrainz and iTunes services to fix wrong years (Spotify often provides "Remaster" or "Greatest Hits" years (e.g., 2011) instead of the original release date).
+
+If the years are still wrong, one can use AI to fix them:
 
 1.  Run the script once. It will save `hitster_cards/songs.json`.
 2.  Open `songs.json` or paste it into ChatGPT/Gemini with this prompt:
@@ -138,12 +144,31 @@ The script generates:
 
 Copy the `.env.example` file to `.env` (this allows to set spotify credentials and use `git` to manage your changes without commiting the secrets to git!).
 
-The `.env` file can then be used to configure the creation of the cards
+The `.env` file can then be used to configure the creation of the cards.
+
+Some parameters can also be overridden by command line parameters:
+
+```bash
+src/hitster_card_creator.py --help                                                                       
+usage: hitster_card_creator.py [-h] [--fetch] [--ink-save-mode] [--card-draw-border] [--card-label CARD_LABEL] [--file FILE]
+
+Hitster Card Generator
+
+options:
+  -h, --help            show this help message and exit
+  --fetch               Force re-fetching data and remove existing songs.json
+  --ink-saving-mode     if set, print the qr cards in ink saving mode (white background, black qr code)
+  --card-draw-border    if set, draw border around the qr cards for easier cutting
+  --card-label CARD_LABEL
+                        Add a small label to each card (e.g. event name or playlist identifier)
+  --file FILE           Set the json file to use as data source (overrides fetch and links.txt)
+  ```
 
 ### Save Ink
 
 * `INK_SAVING_MODE`: if enabled, the QR code side is also printed white and the solution side cards are not filled, but only marked with a thick frame in the solution color.
 * `CARD_DRAW_BORDER`: if enabled, the QR side of the cards gets a black or white border (depending on background color).
+* `CARD_LABEL`: Add a small label to each card (e.g. event name or playlist identifier)
 
 ```bash
 # layout of cards:
@@ -152,7 +177,6 @@ INK_SAVING_MODE=true
 # draw border around the qr cards for easier cutting
 CARD_DRAW_BORDER=true
 ```
-
 
 ### Change color gradient
 Edit the `COLOR_GRADIENT` list in the script:

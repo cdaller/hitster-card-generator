@@ -68,11 +68,14 @@ utils.db = db
 # FINAL INTEGRATED PIPELINE
 # =============================================================================
 
-def generate_hitster_cards(db, playlist_url=None, client_id=None, client_secret=None, output_dir="hitster_cards", fetch=False, card_label=None):
+def generate_hitster_cards(db, playlist_url=None, client_id=None, client_secret=None, file=None, output_dir="hitster_cards", fetch=False, card_label=None):
     print("=== Hitster Card Generator ===\n")
     full_output_path = os.path.join(OUTPUT_DIR, output_dir)
     os.makedirs(full_output_path, exist_ok=True)
-    json_file = os.path.join(OUTPUT_DIR, output_dir, "songs.json")
+    if file:
+        json_file = os.path.abspath(file)
+    else:
+        json_file = os.path.join(OUTPUT_DIR, output_dir, "songs.json")
     
     songs = []
 
@@ -127,9 +130,10 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Hitster Card Generator')
     parser.add_argument('--fetch', action='store_true', help='Force re-fetching data and remove existing songs.json')
-    parser.add_argument('--ink-save-mode', action='store_true', default=None, help='if set, print the qr cards in ink saving mode (white background, black qr code)')
+    parser.add_argument('--ink-saving-mode', action='store_true', default=None, help='if set, print the qr cards in ink saving mode (white background, black qr code)')
     parser.add_argument('--card-draw-border', action='store_true', default=None, help='if set, draw border around the qr cards for easier cutting')
-    parser.add_argument('--card-label', default=None, help='Add a small label to each card (e.g., event name or playlist identifier)')
+    parser.add_argument('--card-label', default=None, help='Add a small label to each card (e.g. event name or playlist identifier)')
+    parser.add_argument('--file', default=None, help='Set the json file to use as data source (overrides fetch and links.txt)')
     args = parser.parse_args()
 
     PLAYLIST_URL = os.getenv("PLAYLIST_URL", "")
@@ -141,15 +145,15 @@ if __name__ == "__main__":
     CARD_DRAW_BORDER = os.getenv("CARD_DRAW_BORDER", "False").lower() == "true"
     CARD_LABEL = os.getenv("CARD_LABEL", None)
 
-    ink_save_mode = args.ink_save_mode if args.ink_save_mode is not None else INK_SAVING_MODE
+    ink_saving_mode = args.ink_saving_mode if args.ink_saving_mode is not None else INK_SAVING_MODE
     card_draw_border = args.card_draw_border if args.card_draw_border is not None else CARD_DRAW_BORDER
     card_label = args.card_label if args.card_label is not None else CARD_LABEL
 
     # Set values in db, allowing command-line overrides
-    db['ink_saving_mode'] = ink_save_mode
+    db['ink_saving_mode'] = ink_saving_mode
     db['card_draw_border'] = card_draw_border
-    db['card_background_color'] = 'white' if ink_save_mode else 'black'
-    db['card_border_color'] = 'black' if ink_save_mode else 'white'
+    db['card_background_color'] = 'white' if ink_saving_mode else 'black'
+    db['card_border_color'] = 'black' if ink_saving_mode else 'white'
     db['card_label'] = card_label
 
     print(f"Using client id {CLIENT_ID} to fetch playlist url {PLAYLIST_URL}...")
@@ -162,4 +166,4 @@ if __name__ == "__main__":
             os.remove(json_file)
             print(f"Removed existing {json_file}")
 
-    generate_hitster_cards(db, PLAYLIST_URL, CLIENT_ID, CLIENT_SECRET, fetch=args.fetch, card_label=db['card_label'])
+    generate_hitster_cards(db, PLAYLIST_URL, CLIENT_ID, CLIENT_SECRET, file=args.file, fetch=args.fetch, card_label=db['card_label'])
