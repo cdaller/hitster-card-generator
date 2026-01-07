@@ -143,7 +143,7 @@ with st.container(border=True):
     with col_label:
         st.write("🏷️ Card Label (appears at bottom of each card)")
     with col_input:
-        card_label = st.text_input("", value="", label_visibility="collapsed", width=200)
+        card_label = st.text_input("Card Label", value="", label_visibility="collapsed", width=200)
     if card_label.strip() != "":
         db['card_label'] = card_label.strip()
 
