@@ -27,10 +27,10 @@ The script generates a PDF optimized for duplex printing (the backs are mirrored
 - **Web Interface:** New Streamlit UI for easy link pasting and instant PDF generation.
 - **No API Key Required:** Use the new "Links Mode" to bypass Spotify Developer restrictions.
 - **Neon Design:** Generates QR codes with a randomized neon ring aesthetic.
-- **Smart Timeline Colors:** Solution cards use a dynamic color gradient (Purple → Pink → Gold → Blue) representing the release year relative to the other songs in the playlist.
-- **Print Ready:** Outputs a standard A4 PDF with 5x5cm cards in a 4x5 grid layout.
-- **Duplex Optimized:** Automatically generates alternating pages with mirrored layouts for accurate double-sided printing.
-- **Spotify Integration:** Fetches song metadata (Artist, Title, Year) and Spotify Links automatically using the Spotify Web API.
+- **Smart Timeline Colors:** Dynamic gradients (Purple → Pink → Gold → Blue) representing release years.
+- **Ink Saving Mode:** Option to print with white backgrounds to save toner.
+- **Print Ready:** Outputs a standard A4 PDF with 5x5cm cards (20 per page).
+- **Duplex Optimized:** Automatically generates alternating pages with mirrored layouts.
 
 ---
 
@@ -60,9 +60,10 @@ The easiest way to generate cards is via my free to use live web app:
 2. **Paste**: Enter the links into the web app text area.
 3. **Download**: Click "Create My PDF" and save your high-res printable file.
 
-[!TIP] A Note on Accuracy (Web App): When using the Web Interface, the years are pulled directly from Spotify and verified with MusicBrainz/iTunes metadata. While highly convenient, these sources occasionally provide "Remaster" or "Re-release" years.
+>[!TIP] 
+>A Note on Accuracy (Web App): When using the Web Interface, the years are pulled directly from Spotify/iTunes/MusicBrainz metadata. While highly convenient, these sources occasionally provide "Remaster" or "Re-release" years.
 
-If you need 100% original release dates: Please use Method 2 (Local Script), which allows you to review and edit the songs.json metadata before the final PDF is generated.
+>If you need 100% original release dates: Please use Method 2 (Local Script), which allows you to review and edit the songs.json metadata before the final PDF is generated.
 
 ### Method 2: No-API Scraper (Patch for current problems with unavailable Spotify API keys)
 Use this if you can't get Spotify API keys. It handles playlists of any size (300+ songs).
@@ -72,21 +73,14 @@ Use this if you can't get Spotify API keys. It handles playlists of any size (30
 3. **Run:**
 ```bash
 python src/hitster_card_creator.py
+# Or with options:
+python src/hitster_card_creator.py --ink-saving-mode
 ```
-
 ### Method 3: Official Spotify API
 
 Use this if you already have an existing Spotify App.
 
-Open `src/hitster_card_creator.py` and replace the placeholders:
-
-```python
-PLAYLIST_URL = "your_spotify_playlist_url_here"
-CLIENT_ID = "your_client_id_here"
-CLIENT_SECRET = "your_client_secret_here"
-```
-
-Or better create a `.env` file in the project directory and set the credentials there. See `.env.example` as a template.
+Create an `.env` file with the instructions of given in the `.env.example` file
 
 Then run:
 ```bash
@@ -118,24 +112,18 @@ The script uses MusicBrainz and iTunes services to fix wrong years (Spotify ofte
 
 If the years are still wrong, one can use AI to fix them:
 
-1.  Run the script once. It will save `hitster_cards/songs.json`.
+1.  Run the script once. It will save `output/hitster_cards/songs.json`.
 2.  Open `songs.json` or paste it into ChatGPT/Gemini with this prompt:
     > "Correct the years in this JSON to the original single release dates. Return valid JSON."
-3.  Save the corrected file back to `hitster_cards/songs.json`.
-4.  Run the script again. It will use your corrected local file instead of Spotify data.
+3.  Save the corrected file back to `output/hitster_cards/songs.json`.
+4.  Run again without --fetch to use your local JSON.
 
 ## Output
 
 The script generates:
-- **Card images:** `hitster_cards/card_001_qr.png`, `card_001_solution.png`, etc.
-- **Print-ready PDF:** `hitster_cards.pdf`
-
-### PDF Layout
-- **Page 1:** Cards 1-20 (QR fronts, black background)
-- **Page 2:** Cards 1-20 (Solution backs, white background, mirrored for duplex)
-- **Page 3:** Cards 21-40 (QR fronts)
-- **Page 4:** Cards 21-40 (Solution backs)
-- And so on...
+- **Card images:** `output/hitster_cards/card_001_qr.png`, `card_001_solution.png`, etc.
+- **JSON Data:** `output/hitster_cards/songs.json` (Editable for corrections)
+- **Print-ready PDF:** `output/hitster_cards.pdf`
 
 ## Printing Instructions
 
@@ -167,11 +155,10 @@ options:
   --file FILE           Set the json file to use as data source (overrides fetch and links.txt)
   ```
 
-### Save Ink
-
-* `INK_SAVING_MODE`: if enabled, the QR code side is also printed white and the solution side cards are not filled, but only marked with a thick frame in the solution color.
-* `CARD_DRAW_BORDER`: if enabled, the QR side of the cards gets a black or white border (depending on background color).
-* `CARD_LABEL`: Add a small label to each card (e.g. event name or playlist identifier)
+### Save Ink & Borders
+* **Web App:** Use the toggles in the sidebar (⚙️ Settings).
+* **CLI:** Use `--ink-saving-mode` and `--card-draw-border`.
+* **Config:** Set `INK_SAVING_MODE=true` in your `.env` file.
 
 ```bash
 # layout of cards:
@@ -181,6 +168,13 @@ INK_SAVING_MODE=true
 CARD_DRAW_BORDER=true
 ```
 
+### Card Label
+
+To add a small label on each card (for the id of the playlist, the name of the event, ...), use
+* **CLI:** Use `--card-label "Top 100 2026"`.
+* **Config:** Set `CARD_LABEL="Top 100 2026"` in your `.env` file.
+
+
 ### Change color gradient
 Edit the `COLOR_GRADIENT` list in the script:
 ```python
@@ -188,15 +182,6 @@ COLOR_GRADIENT = [
     "#7030A0",  # Purple (oldest)
     "#4169E1",  # Blue (newest)
 ]
-```
-
-### Adjust card layout
-Modify these variables:
-```python
-cards_per_row = 4
-cards_per_col = 5
-card_size = 5 * cm
-gap_size = 0.2 * cm
 ```
 
 ## Troubleshooting
@@ -229,6 +214,12 @@ Pull requests welcome! Feel free to:
 - Improve font handling
 - Add command-line interface
 - Support other music platforms
+
+## 🤝 Contributors
+
+A huge thanks to the following people for helping make this project better:
+
+* **[cdaller](https://github.com/cdaller)** - Implemented Ink-Saving mode, improved QR code logic, and enhanced song year accuracy.
 
 ---
 
