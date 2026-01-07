@@ -46,19 +46,24 @@ with st.sidebar:
     st.caption("Customize your print layout")
     
     # 1. Ink Saving Mode Toggle
-    ink_mode = st.toggle("Ink Saving Mode", value=False, 
+    ink_mode = st.toggle("🖨️ Ink Saving Mode", value=False, 
                         help="Use white background and black text to save ink.")
     
     # 2. Border Toggle
-    border_mode = st.toggle("Draw Cutting Borders", value=False,
+    border_mode = st.toggle("🖼️ Draw Cutting Borders", value=False,
                            help="Draw a line around each card for easier cutting.")
-
+    
+    # 3. Label Input
+    card_label_input = st.text_input("🏷️ Card Label", value=db.get("card_label", ""),
+                                     help="Text to appear at the bottom of each card.")
     # 3. Update the global configuration based on UI selection
     db["ink_saving_mode"] = ink_mode
     db["card_draw_border"] = border_mode
     # Update colors dynamically based on ink mode
     db["card_background_color"] = "white" if ink_mode else "black"
     db["card_border_color"] = "black" if ink_mode else "white"
+    if card_label_input.strip() != "":
+        db["card_label"] = card_label_input.strip()
     st.divider()
         # ---------------------------
 
@@ -144,29 +149,6 @@ if link_count > 0:
     st.success(f"{link_count} valid Spotify track(s) detected.")
 else:
     st.warning("No valid track links detected yet.")
-
-# add checkbox for ink saving mode
-with st.container(border=True):
-    st.subheader("⚙️ Card Options")
-    
-    ink_saving = st.checkbox("🖨️ Ink Saving Mode (Light Background)", value=False)
-    db['ink_saving_mode'] = ink_saving
-    if ink_saving:
-        db['card_background_color'] = "white"
-        db['card_border_color'] = "black"
-
-    # add checkbox for card border
-    draw_border = st.checkbox("🖼️ Draw Card Border (for easier cutting)", value=False)
-    db['card_draw_border'] = draw_border
-
-    # add text input for card labels
-    col_label, col_input = st.columns([1, 4])
-    with col_label:
-        st.write("🏷️ Card Label (appears at bottom of each card)")
-    with col_input:
-        card_label = st.text_input("Card Label", value="", label_visibility="collapsed", width=200)
-    if card_label.strip() != "":
-        db['card_label'] = card_label.strip()
 
 # --- GENERATION LOGIC ---
 if st.button("Create My PDF", type="primary"):
