@@ -124,6 +124,28 @@ if link_count > 0:
 else:
     st.warning("No valid track links detected yet.")
 
+# add checkbox for ink saving mode
+with st.container(border=True):
+    st.subheader("⚙️ Card Options")
+    
+    ink_saving = st.checkbox("🖨️ Ink Saving Mode (Light Background)", value=False)
+    db['ink_saving_mode'] = ink_saving
+    if ink_saving:
+        db['card_background_color'] = "white"
+        db['card_border_color'] = "black"
+
+    # add checkbox for card border
+    draw_border = st.checkbox("🖼️ Draw Card Border (for easier cutting)", value=False)
+    db['card_draw_border'] = draw_border
+
+    # add text input for card labels
+    col_label, col_input = st.columns([1, 4])
+    with col_label:
+        st.write("🏷️ Card Label (appears at bottom of each card)")
+    with col_input:
+        card_label = st.text_input("", value="", label_visibility="collapsed", width=200)
+    if card_label.strip() != "":
+        db['card_label'] = card_label.strip()
 
 # --- GENERATION LOGIC ---
 if st.button("Create My PDF", type="primary"):

@@ -611,7 +611,7 @@ def create_pdf_in_memory(songs, progress_bar=None):
     total_cards = len(songs)
     years = [song['year'] for song in songs]
 
-    card_label = db.get('label', None)
+    card_label = db.get('card_label', None)
 
     for i in range(0, total_cards, 20):
         # Slice the data for this specific page

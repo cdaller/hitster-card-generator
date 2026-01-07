@@ -6,6 +6,8 @@
 
 Turn your favorite playlists into a physical card game. This tool creates professional-looking cards with neon QR codes for scanning and date-based colored solution backs. It automatically handles the layout for double-sided printing.
 
+Use the QR Codes on the cards to start Spotify App directly. Or use the "QRSong!" App to get a better game flow (not seeing the title in the App).
+
 > [!IMPORTANT]
 > **2026 API Update:** As of January 2, 2026, Spotify has temporarily disabled the "Create App" button for new developer accounts. 
 > **If you cannot create a Spotify App, use Method 1 (The Webapp) or for more control Method 2 (The Scraper) below.** It requires no API keys and works for any playlist.
@@ -50,14 +52,15 @@ The script generates a PDF optimized for duplex printing (the backs are mirrored
 ## Usage
 
 ### 🌐 Method 1: Web Interface (Easiest)
+
 The easiest way to generate cards is via my free to use live web app:
-👉 **[Hitster Card Generator](https://hitster-card-generator.streamlit.app/)**
+👉 **[Hitster Card Generator](https://hitster-card-generator.streamlit.app/)** or run locally with `streamlit run streamlit_app.py` command.
 
 1. **Copy Links**: In Spotify Desktop, go into your playlist, select your songs with 'Ctrl+A' and press 'Ctrl+C'.
 2. **Paste**: Enter the links into the web app text area.
 3. **Download**: Click "Create My PDF" and save your high-res printable file.
 
-[!TIP] A Note on Accuracy (Web App): When using the Web Interface, the years are pulled directly from Spotify/iTunes metadata. While highly convenient, these sources occasionally provide "Remaster" or "Re-release" years.
+[!TIP] A Note on Accuracy (Web App): When using the Web Interface, the years are pulled directly from Spotify and verified with MusicBrainz/iTunes metadata. While highly convenient, these sources occasionally provide "Remaster" or "Re-release" years.
 
 If you need 100% original release dates: Please use Method 2 (Local Script), which allows you to review and edit the songs.json metadata before the final PDF is generated.
 
