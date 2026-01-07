@@ -174,7 +174,6 @@ To add a small label on each card (for the id of the playlist, the name of the e
 * **CLI:** Use `--card-label "Top 100 2026"`.
 * **Config:** Set `CARD_LABEL="Top 100 2026"` in your `.env` file.
 
-
 ### Change color gradient
 Edit the `COLOR_GRADIENT` list in the script:
 ```python
