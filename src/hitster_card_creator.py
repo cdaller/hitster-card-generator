@@ -24,6 +24,8 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 from reportlab.lib.units import cm
 import utils
+import shutil
+from datetime import datetime
 
 # =============================================================================
 # CONFIGURATION
@@ -68,7 +70,7 @@ utils.db = db
 # FINAL INTEGRATED PIPELINE
 # =============================================================================
 
-def generate_hitster_cards(db, playlist_url=None, client_id=None, client_secret=None, file=None, output_dir="hitster_cards", fetch=False, card_label=None):
+def generate_hitster_cards(db, playlist_url=None, client_id=None, client_secret=None, file=None, output_dir="hitster_cards", fetch_url=False, card_label=None):
     print("=== Hitster Card Generator ===\n")
     full_output_path = os.path.join(OUTPUT_DIR, output_dir)
     os.makedirs(full_output_path, exist_ok=True)
@@ -80,7 +82,7 @@ def generate_hitster_cards(db, playlist_url=None, client_id=None, client_secret=
     songs = []
 
     # --- DATA FETCHING LOGIC ---
-    if not fetch and os.path.exists(json_file):
+    if not fetch_url and os.path.exists(json_file):
         print(f"Step 1: Loading local data from {json_file}...")
         with open(json_file, 'r', encoding='utf-8') as f:
             songs = json.load(f)
@@ -123,29 +125,71 @@ def generate_hitster_cards(db, playlist_url=None, client_id=None, client_secret=
     utils.create_cards_pdf(os.path.join(OUTPUT_DIR, output_dir), pdf_path)
     print(f"\n✓ Done! PDF ready at: {pdf_path}")
 
+# --- OPTIONAL BACKUP FUNCTION ---
+def backup_files(backup_arg, file_arg, card_label):
+    """do an optional backup of songs.json and the generated PDF"""
+    print("\nStep 4: Backing up files...")
+    # Determine backup directory
+    if isinstance(backup_arg, str) and backup_arg is not True:
+        backup_dir = os.path.abspath(backup_arg)
+    else:
+        backup_dir = os.path.join(OUTPUT_DIR, "backups")
+    os.makedirs(backup_dir, exist_ok=True)
+
+    # Determine source files
+    if file_arg:
+        songs_src = os.path.abspath(file_arg)
+    else:
+        songs_src = os.path.join(OUTPUT_DIR, "hitster_cards", "songs.json")
+
+    pdf_src = os.path.join(OUTPUT_DIR, "hitster_cards.pdf")
+
+    # Build timestamped filenames
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    label_part = ""
+    if card_label:
+        label_part = f"_{card_label.replace(' ', '_')}"
+
+    # Backup songs.json if it exists
+    if os.path.exists(songs_src):
+        songs_dst = os.path.join(backup_dir, f"songs_{label_part}_{ts}.json")
+        shutil.copy2(songs_src, songs_dst)
+        print(f"Backed up songs.json to {songs_dst}")
+    else:
+        print(f"Warning: songs source not found: {songs_src}")
+
+    # Backup PDF if it exists
+    if os.path.exists(pdf_src):
+        pdf_dst = os.path.join(backup_dir, f"hitster_cards{label_part}_{ts}.pdf")
+        shutil.copy2(pdf_src, pdf_dst)
+        print(f"Backed up PDF to {pdf_dst}")
+    else:
+        print(f"Warning: PDF not found: {pdf_src}")
+
 if __name__ == "__main__":
 
     # If API is down, you can leave these blank and just have 'links.txt' ready
     load_dotenv()  # take environment variables from .env file
 
     parser = argparse.ArgumentParser(description='Hitster Card Generator')
-    parser.add_argument('--fetch', nargs='?', const=True, default=False, help='Force re-fetching data and remove existing songs.json. Optionally specify a playlist URL to override PLAYLIST_URL env var.')
     parser.add_argument('--ink-saving-mode', action='store_true', default=None, help='if set, print the qr cards in ink saving mode (white background, black qr code)')
     parser.add_argument('--card-draw-border', action='store_true', default=None, help='if set, draw border around the qr cards for easier cutting')
     parser.add_argument('--card-label', default=None, help='Add a small label to each card (e.g. event name or playlist identifier)')
-    parser.add_argument('--file', default=None, help='Set the json file to use as data source (overrides fetch and links.txt)')
+    parser.add_argument('--playlist-url', nargs='?', const=True, default=False, help='Force re-fetching data and remove existing songs.json. Optionally specify a playlist URL to override PLAYLIST_URL env var.')
+    parser.add_argument('--file', default=None, help='Set the json file to use as data source (overrides playlist-url and links.txt)')
+    parser.add_argument('--backup', nargs='?', const=True, default=None, help='Backup songs.json and the generated PDF. Optionally provide a target directory.')
     args = parser.parse_args()
 
     PLAYLIST_URL = os.getenv("PLAYLIST_URL", "")
     CLIENT_ID = os.getenv("CLIENT_ID", "")
     CLIENT_SECRET = os.getenv("CLIENT_SECRET", "")
-    
-    # Override PLAYLIST_URL if provided via --fetch parameter
-    if args.fetch and isinstance(args.fetch, str):
-        PLAYLIST_URL = args.fetch
-        fetch = True
+
+    # Override PLAYLIST_URL if provided via --playlist-url parameter
+    if args.playlist_url and isinstance(args.playlist_url, str):
+        PLAYLIST_URL = args.playlist_url
+        fetch_url = True
     else:
-        fetch = args.fetch
+        fetch_url = args.playlist_url
 
     # Read default values from environment variables
     INK_SAVING_MODE = os.getenv("INK_SAVING_MODE", "False").lower() == "true"
@@ -168,11 +212,15 @@ if __name__ == "__main__":
     print(f"Using client id {CLIENT_ID} to fetch playlist url {PLAYLIST_URL}...")
     print(f"Ink saving mode: {db['ink_saving_mode']}, Draw border: {db['card_draw_border']}, Label: {db['card_label']}\n")
 
-    if fetch:
+    if fetch_url:
         # Remove existing songs.json if it exists
         json_file = os.path.join(OUTPUT_DIR, "hitster_cards", "songs.json")
         if os.path.exists(json_file):
             os.remove(json_file)
             print(f"Removed existing {json_file}")
 
-    generate_hitster_cards(db, PLAYLIST_URL, CLIENT_ID, CLIENT_SECRET, file=args.file, fetch=fetch, card_label=db['card_label'])
+    generate_hitster_cards(db, PLAYLIST_URL, CLIENT_ID, CLIENT_SECRET, file=args.file, fetch_url=fetch_url, card_label=db['card_label'])
+
+    # --- OPTIONAL BACKUP ---
+    if args.backup:
+        backup_files(args.backup, args.file, card_label)

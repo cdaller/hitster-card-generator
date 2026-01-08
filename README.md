@@ -140,20 +140,22 @@ The `.env` file can then be used to configure the creation of the cards.
 Some parameters can also be overridden by command line parameters:
 
 ```bash
-src/hitster_card_creator.py --help                                                                       
-usage: hitster_card_creator.py [-h] [--fetch] [--ink-save-mode] [--card-draw-border] [--card-label CARD_LABEL] [--file FILE]
+src/hitster_card_creator.py --help
+usage: hitster_card_creator.py [-h] [--playlist-url [PLAYLIST_URL]] [--ink-saving-mode] [--card-draw-border] [--card-label CARD_LABEL] [--file FILE] [--backup [BACKUP]]
 
 Hitster Card Generator
 
 options:
   -h, --help            show this help message and exit
-  --fetch               Force re-fetching data and remove existing songs.json
   --ink-saving-mode     if set, print the qr cards in ink saving mode (white background, black qr code)
   --card-draw-border    if set, draw border around the qr cards for easier cutting
   --card-label CARD_LABEL
                         Add a small label to each card (e.g. event name or playlist identifier)
-  --file FILE           Set the json file to use as data source (overrides fetch and links.txt)
-  ```
+  --playlist-url [PLAYLIST_URL]
+                        Force re-fetching data and remove existing songs.json. Optionally specify a playlist URL to override PLAYLIST_URL env var.
+  --file FILE           Set the json file to use as data source (overrides playlist-url and links.txt)
+  --backup [BACKUP]     Backup songs.json and the generated PDF. Optionally provide a target directory.
+```
 
 ### Save Ink & Borders
 * **Web App:** Use the toggles in the sidebar (⚙️ Settings).
