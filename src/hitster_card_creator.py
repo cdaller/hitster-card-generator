@@ -129,7 +129,7 @@ if __name__ == "__main__":
     load_dotenv()  # take environment variables from .env file
 
     parser = argparse.ArgumentParser(description='Hitster Card Generator')
-    parser.add_argument('--fetch', action='store_true', help='Force re-fetching data and remove existing songs.json')
+    parser.add_argument('--fetch', nargs='?', const=True, default=False, help='Force re-fetching data and remove existing songs.json. Optionally specify a playlist URL to override PLAYLIST_URL env var.')
     parser.add_argument('--ink-saving-mode', action='store_true', default=None, help='if set, print the qr cards in ink saving mode (white background, black qr code)')
     parser.add_argument('--card-draw-border', action='store_true', default=None, help='if set, draw border around the qr cards for easier cutting')
     parser.add_argument('--card-label', default=None, help='Add a small label to each card (e.g. event name or playlist identifier)')
@@ -139,11 +139,19 @@ if __name__ == "__main__":
     PLAYLIST_URL = os.getenv("PLAYLIST_URL", "")
     CLIENT_ID = os.getenv("CLIENT_ID", "")
     CLIENT_SECRET = os.getenv("CLIENT_SECRET", "")
+    
+    # Override PLAYLIST_URL if provided via --fetch parameter
+    if args.fetch and isinstance(args.fetch, str):
+        PLAYLIST_URL = args.fetch
+        fetch = True
+    else:
+        fetch = args.fetch
 
     # Read default values from environment variables
     INK_SAVING_MODE = os.getenv("INK_SAVING_MODE", "False").lower() == "true"
     CARD_DRAW_BORDER = os.getenv("CARD_DRAW_BORDER", "False").lower() == "true"
     CARD_LABEL = os.getenv("CARD_LABEL", None)
+    MUSICBRAINZ_USER_AGENT = os.getenv("MUSICBRAINZ_USER_AGENT", "hitster-card-generator/1.0 (you@example.com)")
 
     ink_saving_mode = args.ink_saving_mode if args.ink_saving_mode is not None else INK_SAVING_MODE
     card_draw_border = args.card_draw_border if args.card_draw_border is not None else CARD_DRAW_BORDER
@@ -155,15 +163,16 @@ if __name__ == "__main__":
     db['card_background_color'] = 'white' if ink_saving_mode else 'black'
     db['card_border_color'] = 'black' if ink_saving_mode else 'white'
     db['card_label'] = card_label
+    db['musicbrainz_user_agent'] = MUSICBRAINZ_USER_AGENT
 
     print(f"Using client id {CLIENT_ID} to fetch playlist url {PLAYLIST_URL}...")
     print(f"Ink saving mode: {db['ink_saving_mode']}, Draw border: {db['card_draw_border']}, Label: {db['card_label']}\n")
 
-    if args.fetch:
+    if fetch:
         # Remove existing songs.json if it exists
         json_file = os.path.join(OUTPUT_DIR, "hitster_cards", "songs.json")
         if os.path.exists(json_file):
             os.remove(json_file)
             print(f"Removed existing {json_file}")
 
-    generate_hitster_cards(db, PLAYLIST_URL, CLIENT_ID, CLIENT_SECRET, file=args.file, fetch=args.fetch, card_label=db['card_label'])
+    generate_hitster_cards(db, PLAYLIST_URL, CLIENT_ID, CLIENT_SECRET, file=args.file, fetch=fetch, card_label=db['card_label'])

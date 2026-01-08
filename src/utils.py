@@ -1,4 +1,5 @@
 import io
+import sys
 import time
 import os
 import random
@@ -23,7 +24,7 @@ db = None
 def get_year_from_musicbrainz(title, artist) -> int | None:
     q = f'recording:"{title}" AND artist:"{artist}"'
     params = {"query": q, "fmt": "json", "limit": 5}
-    headers = {"User-Agent": "hitster-card-fix/1.0 (you@example.com)"}
+    headers = {"User-Agent": db['musicbrainz_user_agent']}
     try:
         r = requests.get("https://musicbrainz.org/ws/2/recording", params=params, headers=headers, timeout=10)
         r.raise_for_status()
@@ -40,7 +41,8 @@ def get_year_from_musicbrainz(title, artist) -> int | None:
         if not years:
             return None
         return min(years)
-    except Exception:
+    except Exception as e:
+        print(f"Error fetching year from MusicBrainz for '{title}' by {artist}: {e}")
         return None
 
 def get_year_from_itunes(title, artist) -> int | None:
@@ -60,18 +62,20 @@ def get_year_from_itunes(title, artist) -> int | None:
         if not years:
             return None
         return min(years)
-    except Exception:
+    except Exception as e:
+        print(f"Error fetching year from iTunes for '{title}' by {artist}: {e}")
         return None
     
 def get_year_and_source(title, artist, orig_year) -> tuple[int | None, str | None]:
     """Get release year and source ('iTunes' or 'MusicBrainz') for a song."""
+    musicbrainz_year = get_year_from_musicbrainz(title, artist)
+    if musicbrainz_year is not None and musicbrainz_year < orig_year:
+        return musicbrainz_year, 'MusicBrainz'
+
     itunes_year = get_year_from_itunes(title, artist)
-    if itunes_year is not None:
+    if itunes_year is not None and itunes_year < orig_year:
         return itunes_year, 'iTunes'
     
-    musicbrainz_year = get_year_from_musicbrainz(title, artist)
-    if musicbrainz_year is not None:
-        return musicbrainz_year, 'MusicBrainz'
     
     return orig_year, 'Spotify'
 
@@ -121,6 +125,11 @@ def fetch_spotify_playlist(playlist_url, client_id, client_secret):
     headers = {'Authorization': f'Bearer {access_token}'}
     response = requests.get(f'https://api.spotify.com/v1/playlists/{playlist_id}', 
                            headers=headers)
+    
+    if response.status_code != 200:
+        print(f"Error fetching playlist: {response.status_code} {response.text}")
+        sys.exit(-1)
+
     playlist_data = response.json()
     
     print(f"Playlist: {playlist_data['name']}")
