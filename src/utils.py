@@ -154,6 +154,8 @@ def parse_playlist_data(playlist_data):
 
     songs = []
 
+    print(f"Processing {len(tracks)} tracks...")
+
     for index,item in enumerate(tracks):
         track = item['track']
 
@@ -179,7 +181,8 @@ def parse_playlist_data(playlist_data):
 
         if index % 100 == 0:
             print(f"  Processed {index}/{len(tracks)} tracks...")
-        
+
+    print(f"✓ Processed all {len(tracks)} tracks!")        
     return songs
 
 def sanitize_name(name):
