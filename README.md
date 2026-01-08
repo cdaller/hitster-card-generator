@@ -85,6 +85,9 @@ Create an `.env` file with the instructions of given in the `.env.example` file
 Then run:
 ```bash
 python src/hitster_card_creator.py
+
+# optionally set some parameters to set a card label, save ink, draw a border, define the playlist url and backup the resulting files to not overwrite them later:
+python src/hitster_card_creator.py --card-label "Top 1000 2025" --playlist-url https://open.spotify.com/playlist/3cEYpjA9oz9GiPac4AsH4n --ink-saving-mode --card-draw-border --backup
 ```
 
 ## Setup Spotify API Credentials
