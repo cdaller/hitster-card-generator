@@ -154,7 +154,7 @@ def parse_playlist_data(playlist_data):
 
     songs = []
 
-    for item in tracks:
+    for index,item in enumerate(tracks):
         track = item['track']
 
         name = track['name']
@@ -176,6 +176,9 @@ def parse_playlist_data(playlist_data):
         song['link'] = track['external_urls']['spotify']
         song['album'] = track['album']['name']
         songs.append(song)
+
+        if index % 100 == 0:
+            print(f"  Processed {index}/{len(tracks)} tracks...")
         
     return songs
 
