@@ -115,17 +115,17 @@ The script uses MusicBrainz and iTunes services to fix wrong years (Spotify ofte
 
 If the years are still wrong, one can use AI to fix them:
 
-1.  Run the script once. It will save `output/hitster_cards/songs.json`.
+1.  Run the script once. It will save `output/songs.json`.
 2.  Open `songs.json` or paste it into ChatGPT/Gemini with this prompt:
     > "Correct the years in this JSON to the original single release dates. Return valid JSON."
-3.  Save the corrected file back to `output/hitster_cards/songs.json`.
+3.  Save the corrected file back to `output/songs.json`.
 4.  Run again without --fetch to use your local JSON.
 
 ## Output
 
 The script generates:
 - **Card images:** `output/hitster_cards/card_001_qr.png`, `card_001_solution.png`, etc.
-- **JSON Data:** `output/hitster_cards/songs.json` (Editable for corrections)
+- **JSON Data:** `output/songs.json` (Editable for corrections)
 - **Print-ready PDF:** `output/hitster_cards.pdf`
 
 ## Printing Instructions

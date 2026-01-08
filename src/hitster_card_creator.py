@@ -77,7 +77,7 @@ def generate_hitster_cards(db, playlist_url=None, client_id=None, client_secret=
     if file:
         json_file = os.path.abspath(file)
     else:
-        json_file = os.path.join(OUTPUT_DIR, output_dir, "songs.json")
+        json_file = os.path.join(OUTPUT_DIR, "songs.json")
     
     songs = []
 
@@ -108,6 +108,13 @@ def generate_hitster_cards(db, playlist_url=None, client_id=None, client_secret=
 
     # --- CARD GENERATION ---
     print(f"\nStep 2: Generating {len(songs)} cards...")
+
+    # remove existing files in output directory
+    for existing_file in os.listdir(full_output_path):
+        file_path = os.path.join(full_output_path, existing_file)
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+
     release_years = [song['year'] for song in songs]
     for i, song in enumerate(songs):
         qr_path = os.path.join(full_output_path, f"card_{i+1:03d}_qr.png")
@@ -140,7 +147,7 @@ def backup_files(backup_arg, file_arg, card_label):
     if file_arg:
         songs_src = os.path.abspath(file_arg)
     else:
-        songs_src = os.path.join(OUTPUT_DIR, "hitster_cards", "songs.json")
+        songs_src = os.path.join(OUTPUT_DIR, "songs.json")
 
     pdf_src = os.path.join(OUTPUT_DIR, "hitster_cards.pdf")
 
@@ -152,7 +159,7 @@ def backup_files(backup_arg, file_arg, card_label):
 
     # Backup songs.json if it exists
     if os.path.exists(songs_src):
-        songs_dst = os.path.join(backup_dir, f"songs_{label_part}_{ts}.json")
+        songs_dst = os.path.join(backup_dir, f"songs{label_part}_{ts}.json")
         shutil.copy2(songs_src, songs_dst)
         print(f"Backed up songs.json to {songs_dst}")
     else:
@@ -214,7 +221,7 @@ if __name__ == "__main__":
 
     if fetch_url:
         # Remove existing songs.json if it exists
-        json_file = os.path.join(OUTPUT_DIR, "hitster_cards", "songs.json")
+        json_file = os.path.join(OUTPUT_DIR, "songs.json")
         if os.path.exists(json_file):
             os.remove(json_file)
             print(f"Removed existing {json_file}")
